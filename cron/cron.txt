@@ -1,0 +1,10 @@
+PATH=/opt/remi/php73/root/bin/:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+
+# Jobs log rotate
+0 0 * * * php artisan wq:logging:jobs >> /dev/null 2>&1
+
+# Laravel scheduler
+* * * * * php artisan schedule:run >> "$HOME/storage/logs/jobs-"`date +"\%Y-\%m-\%d"`".log"
+
+# Restart queue workers daily
+0 3 * * * php artisan queue:restart >> "$HOME/storage/logs/jobs-"`date +"\%Y-\%m-\%d"`".log"

@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "akaunting/laravel-firewall": "^2.1",
+        "backpack/crud": "^5.0.0",
         "beyondcode/laravel-self-diagnosis": "^1.9",
         "fakerphp/faker": "^1.23",
         "guzzlehttp/guzzle": "^7.2",

@@ -25,6 +25,7 @@
         "backpack/generators": "^3.3",
         "barryvdh/laravel-debugbar": "^3.8",
         "barryvdh/laravel-ide-helper": "^2.10",
+        "laravel-lang/lang": "^12.21",
         "laravel-lang/publisher": "^14.6",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",

@@ -76,6 +76,10 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "repositories": {
+        "backpack": {
+            "type": "composer",
+            "url": "https://repo.backpackforlaravel.com/"
+        },
         "laravel-self-diagnosis": {
             "type": "git",
             "url": "https://github.com/thomascombe/laravel-self-diagnosis"

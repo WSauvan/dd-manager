@@ -1,4 +1,10 @@
 <?php
+// Fix HTTPS detection if behind a proxy
+if(isset($_SERVER['HTTP_X_PROTO']) 
+  || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+    $_SERVER['HTTPS'] = 'on';
+}
+
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;

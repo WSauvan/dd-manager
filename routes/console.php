@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+Artisan::command('wq:logging:jobs', function () {
+    Log::channel('jobs')->info('Run `wq:logging:jobs` command.');
+})
+->describe('Trigger jobs logging channel rotation');

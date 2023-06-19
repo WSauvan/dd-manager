@@ -1,4 +1,9 @@
 <?php
+// Override REMOTE_ADDR if server is behind a proxy
+if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $_SERVER['REMOTE_ADDR'] = $_SERVER['HTTP_X_FORWARDED_FOR'];
+}
+
 // Fix HTTPS detection if behind a proxy
 if(isset($_SERVER['HTTP_X_PROTO']) 
   || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {

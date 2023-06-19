@@ -59,7 +59,9 @@ return [
     |
     */
 
-    'files' => storage_path('framework/sessions'),
+    'files' => env('APP_ENV') !== 'local' && false === env('SESSION_DEFAULT_FILE_LOCATION', false) && !empty(env('TMPDIR'))
+        ? sprintf('%s/sessions', rtrim(env('TMPDIR'), '/'))
+        : storage_path('framework/sessions'),
 
     /*
     |--------------------------------------------------------------------------

@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "beyondcode/laravel-self-diagnosis": "^1.9",
+        "fakerphp/faker": "^1.23",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
@@ -18,7 +19,6 @@
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.8",
         "barryvdh/laravel-ide-helper": "^2.10",
-        "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",

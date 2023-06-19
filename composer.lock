@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "45f14d04cb50c2b71777647c1e6b33bd",
+    "content-hash": "a47bc02ea32d1182147fd64f6aea98a7",
     "packages": [
         {
             "name": "akaunting/laravel-firewall",

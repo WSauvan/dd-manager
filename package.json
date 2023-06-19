@@ -31,6 +31,7 @@
         "sass-resources-loader": "^2.2.5",
         "stylelint": "^15.8.0",
         "stylelint-prettier": "^3.0.0",
+        "stylelint-webpack-plugin": "^4.1.1",
         "vite": "^4.0.0",
         "vue-loader": "^17.2.2",
         "vue-template-compiler": "^2.7.14"

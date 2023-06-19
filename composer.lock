@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0da60bd5bc88001aa2ef95727d5a077b",
+    "content-hash": "370614425177f8aa2cbf22b463647613",
     "packages": [
         {
             "name": "akaunting/laravel-firewall",
@@ -165,6 +165,75 @@
                 "source": "https://github.com/Laravel-Backpack/CRUD/tree/5.6.1"
             },
             "time": "2023-05-19T05:23:42+00:00"
+        },
+        {
+            "name": "backpack/pro",
+            "version": "1.6.6",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:Laravel-Backpack/PRO.git",
+                "reference": "163925fdd2ad734d8dc24776ac1a136e2172c65c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://repo.backpackforlaravel.com/dist/backpack/pro/backpack-pro-163925fdd2ad734d8dc24776ac1a136e2172c65c-zip-f6353e.zip",
+                "reference": "163925fdd2ad734d8dc24776ac1a136e2172c65c",
+                "shasum": "db5fea9eb251c4f50ce2f6b379e7bd08eb5af649"
+            },
+            "require": {
+                "backpack/crud": "^5.4.9"
+            },
+            "require-dev": {
+                "orchestra/testbench": "~5|~6",
+                "phpunit/phpunit": "~9.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Backpack\\Pro\\AddonServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Backpack\\Pro\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Backpack\\Pro\\Tests\\": "tests"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit --testdox"
+                ]
+            },
+            "license": [
+                "Proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "Cristian Tabacitu",
+                    "email": "cristian.tabacitu@backpackforlaravel.com",
+                    "homepage": "https://backpackforlaravel.com"
+                }
+            ],
+            "description": "Operations, Fields, Columns, Filters and Widgets for not-so-simple admin panels.",
+            "homepage": "https://github.com/digitallyhappy/backpack-pro",
+            "keywords": [
+                "Backpack",
+                "Backpack Addon",
+                "Backpack for Laravel",
+                "Laravel",
+                "Pro"
+            ],
+            "support": {
+                "source": "https://github.com/Laravel-Backpack/PRO/tree/1.6.6",
+                "issues": "https://github.com/Laravel-Backpack/PRO/issues"
+            },
+            "time": "2023-06-07T12:21:45+00:00"
         },
         {
             "name": "beyondcode/laravel-self-diagnosis",

@@ -1,66 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+**This document is for internal use only. It is confidential and the property of Webqam. It may not be reproduced or
+transmitted in whole or in part without the prior written consent of Webqam. / Ce document est à usage interne
+uniquement. Il est confidentiel et la propriété de Webqam. Il ne peut être reproduit ou transmis en tout ou partie sans
+l'accord préalable et écrit de Webqam.**
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Laravel Readme boilerplate
 
-## About Laravel
+<p align="center">Place your customer logo here</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+You are working on a Laravel project, please follow instructions (More information: https://laravel.com/docs/:laravel-doc-version:) :
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Summary
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+[[_TOC_]]
 
-## Learning Laravel
+## About
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+This project using Laravel :laravel-doc-version: (:app-name:) is an application for (:app-description:)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Gitlab repository : [:repository-url:](:repository-url:)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Server Requirements
 
-## Laravel Sponsors
+* PHP >= :php-version:
+* Nginx orApache server
+* MariaDB, MySQL or MongoDB database
+* BCMath PHP Extension
+* Ctype PHP Extension
+* Fileinfo PHP Extension
+* JSON PHP Extension
+* Mbstring PHP Extension
+* OpenSSL PHP Extension
+* PDO PHP Extension
+* Tokenizer PHP Extension
+* XML PHP Extension
+* Composer
+* Git
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Installation
 
-### Premium Partners
+### Main Structure
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+* Project input : `/public`
+* Configuration files : `/config`
+* Resources files (assets) : `/resources`
+* Core files : `/app`
 
-## Contributing
+For more detailed information about structure of a laravel root directory : https://laravel.com/docs/:laravel-doc-version:/structure
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Commands to use on installation
 
-## Code of Conduct
+* `cp .env.example .env` copy the default configuration file
+* `chmod -R 777 ./storage/` give writing rights for storage directory
+* Fill .env file with your database credentials, APP_URL (with https if it's active)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| local                                       | pre-prod, staging or prod                                                             |
+|---------------------------------------------|---------------------------------------------------------------------------------------|
+| `composer install` install php dependencies | `composer install --no-dev --no-progress -a` install php dependencies and exclude dev |
+| `npm install` install npm dependencies      | Launched with gitlab CI job                                                           |   
 
-## Security Vulnerabilities
+```bash
+php artisan key:generate # generate app key, answer 'yes'
+php artisan config:clear # clear config cache
+php artisan storage:link # create symbolic link for uploads
+php artisan vendor:publish --tag=public # publish public assets to public folder
+php artisan vendor:publish --provider="Backpack\CRUD\BackpackServiceProvider" --tag=minimum # publish public assets needed for Backpack BO
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Development
 
-## License
+### Laravel development server
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+If you have PHP installed locally and you would like to use PHP's built-in development server to serve your application,
+you may use the serve Artisan command.
+
+```bash
+php artisan serve --host[=HOST] --port[=PORT]
+```
+
+Without option, this command will start a development server at http://localhost:8000.
+
+### Docker
+
+This project comes with a Docker environment. For further information, please refer to
+its [readme](.cloud/docker/README.md) file.
+
+In short, create and fill the `.env` file then build the Docker image:
+
+```bash
+cd .cloud/docker
+cp .env.example .env
+make up-expose
+```
+
+### Front
+
+You should use [nvm](https://github.com/nvm-sh/nvm) in order to synchronize to the project Node/NPM versions, stored in [.nvmrc](.nvmrc) file with the following command:
+
+```bash
+nvm use
+```
+
+| local                              | pre-prod, staging or prod                                                    |
+|------------------------------------|------------------------------------------------------------------------------|
+| `npm run dev` compile assets files | `npm run prod` compile assets files, minify files, can launch custom actions |
+| `npm run watch` watch assets files | do not watch anything in environment different of local                      |
+
+* `npm install -g stylelint` install css linter, to improve the style quality code
+* `stylelint "path/to/your/css/**/*.scss"` launch stylelint for all your scss files
+
+### Unit tests
+
+Run the command `vendor/bin/phpunit` to launch tests.
+
+They are located in /tests folder
+
+### Linter
+
+[GrumPHP](https://github.com/phpro/grumphp) and [Prettier](https://prettier.io/) are set in git hook to check code
+style (each commit).
+
+To fix some JS / CSS code style mistake this command can help you : `pretty-quick --staged`  
+It's try to reformat staged code.  
+PHPStorm Plugin : [Prettier](https://plugins.jetbrains.com/plugin/10456-prettier)
+
+To fix some PHP code style mistake this command can help you : `./vendor/bin/phpcbf {you file or your directory}`  
+PHPStorm Plugin : [Prettier](https://plugins.jetbrains.com/plugin/10456-prettier)
+You can enable Code Sniffer in PHPStorm ([Doc](https://www.jetbrains.com/help/phpstorm/using-php-code-sniffer.html)) and
+set code style to [PHPStorm formater](https://laraveldaily.com/how-to-configure-phpstorm-for-psr-2/)
+
+## Variables to replace
+* `:app-name:`
+* `:app-description:`
+* `:laravel-doc-version:`, eg: 8.x
+* `:php-version:`, eg: 7.2.5
+* `:repository-url:`, eg: https://gitlab.webqam.fr/... 
+
+
+## Observations
+
+> The original location of this document is : https://gitlab.webqam.fr/webqam/boilerplates/readme/blob/master/Laravel.md 

@@ -7,6 +7,7 @@
     },
     "devDependencies": {
         "axios": "^1.1.2",
+        "babel-eslint": "^10.1.0",
         "breakpoint-sass": "^3.0.0",
         "eslint-loader": "^4.0.2",
         "eslint-plugin-prettier": "^4.2.1",

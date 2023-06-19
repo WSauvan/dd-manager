@@ -22,6 +22,7 @@
         "webqamdev/activity-logger": "^2.0"
     },
     "require-dev": {
+        "backpack/generators": "^3.3",
         "barryvdh/laravel-debugbar": "^3.8",
         "barryvdh/laravel-ide-helper": "^2.10",
         "laravel/pint": "^1.0",

@@ -1,0 +1,360 @@
+# ####################################### #
+# -- CONFIGURATION OF CONTINUOUS INTEGRATION --
+#
+# This file allows you to configure continuous integration on your project.
+# After each "git push" different tasks will be executed automatically.
+# You can see each executed tasks into 'Pipelines/Builds' on your gitlab project.
+#
+# You must define the following variables, in order to fulfill deploy job:
+# - SSH_HOST = wbq.fr
+# - SSH_USER = my-project
+# - SSH_WORKDIR = ~
+# - WEBSITE_HOST = https://my-project.webqamapps.com
+#
+# ####################################### #
+
+stages:
+  - test:sources
+  - build:php
+  - build:js
+  - test:built
+  - deploy
+  - deploy:test
+  - notifications
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - vendor/
+
+variables:
+  MYSQL_DATABASE: myprojectname_testing
+  MYSQL_ROOT_PASSWORD: myprojectname_testing
+  NODE_VERSION: "16"
+  PHP_VERSION: "8.2"
+
+.installApkDependencies: &installApkDependencies |
+  apk add --no-cache openssh-client curl git rsync
+
+.installComposer: &installComposer |
+  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  php composer-setup.php
+  php -r "unlink('composer-setup.php');"
+
+.composerCiAllowPackages: &composerCiAllowPackages |
+  COMPOSER=composer-ci.json php composer.phar config --no-plugins allow-plugins.pestphp/pest-plugin true
+  COMPOSER=composer-ci.json php composer.phar config --no-plugins allow-plugins.phpro/grumphp true
+  COMPOSER=composer-ci.json php composer.phar config --no-plugins allow-plugins.cweagans/composer-patches true
+
+# ####################################### #
+# Before each task, before_scripts job will be executed
+# ensuring the correct connection between instances and servers
+# ####################################### #
+
+before_script:
+  - '[[ ! -f /.dockerenv ]] && exit 1'
+  - *installApkDependencies
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | ssh-add -
+  - mkdir -p ~/.ssh
+  - 'echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config'
+
+# ################################
+# LAUNCH PHP BUILD TASK
+# As Laroute
+# ################################
+
+artisan:
+  stage: build:php
+  image: php:${PHP_VERSION}-fpm-alpine
+  variables:
+    APP_ENV: 'ci'
+  before_script:
+    - *installApkDependencies
+    - '[[ ! -f /.dockerenv ]] && exit 1'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | ssh-add -
+    - mkdir -p ~/.ssh
+    - 'echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config'
+    - *installComposer
+    - export APP_ENV=ci
+    - cp .env.ci .env
+    - php composer.phar install --no-dev --no-progress -a --ignore-platform-reqs
+  script:
+    - php artisan laroute:generate
+  artifacts:
+    paths:
+      - resources/js/laroute.js
+    expire_in: 1 hr
+  interruptible: true
+
+# ################################
+# LAUNCH WEBPACK TASK
+# ################################
+
+webpack:
+  stage: build:js
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci
+  script:
+    # To add images cache busting, you need to add `mix.version(['public/images'])` in `webpack.mix.js`
+    - '[[ -d resources/images && -n "$(ls resources/images)" ]] && cp -r resources/images public || echo "No images"'
+    - npm run prod
+    - '[[ -d public/images ]] || exit 0' # Exit without error if no images directory
+    - 'IN_MANIFEST="$(cat public/mix-manifest.json | grep /images/ | wc -l)"' # Count images in manifest
+    - 'IN_FOLDER="$(find public/images -type f -not -path "*/\.*" | wc -l)"' # Count images in directory
+    - '[[ $IN_MANIFEST -eq $IN_FOLDER ]] && exit 0' # Exit without error if all images versioned
+    - npm run prod # Re-run to version missing images
+    - 'IN_MANIFEST="$(cat public/mix-manifest.json | grep /images/ | wc -l)"' # Re-count images in manifest
+    - 'IN_FOLDER="$(find public/images -type f -not -path "*/\.*" | wc -l)"' # Re-count images in directory
+    - '[[ $IN_MANIFEST -eq $IN_FOLDER ]] || echo -e "Images found but $IN_FOLDER was found in public/images directory and $IN_MANIFEST in mix-manifest file.\nPlease, ensure versioning is enabled in your webpack.mix.js file by adding mix.version([\"public/images\"]) and there is no hidden image (ie. starting with a \".\")"'
+    - '[[ $IN_MANIFEST -eq $IN_FOLDER ]]' # Fails if not expected count
+  artifacts:
+    paths:
+      - public/css/
+      - public/js/
+      - public/images/
+      - public/files/
+      - public/fonts/
+      - public/mix-manifest.json
+    expire_in: 2 hrs
+  interruptible: true
+
+# ############################### #
+# TESTS
+# ############################### #
+
+
+# ############################### #
+# TESTS
+## TEST PHP
+# ############################### #
+
+phpcs:
+  stage: test:sources
+  image: php:${PHP_VERSION}-fpm-alpine
+  before_script:
+    - *installApkDependencies
+    - *installComposer
+    - echo "{}" > composer-ci.json
+    - *composerCiAllowPackages
+    - COMPOSER=composer-ci.json php composer.phar require squizlabs/php_codesniffer
+  script:
+    - ./vendor/bin/phpcs ./app ./tests/ ./routes/ --standard=phpcs.xml
+  interruptible: true
+
+php_compatibility:
+  stage: test:sources
+  image: php:${PHP_VERSION}-fpm-alpine
+  script:
+    - git clone --depth=1 https://github.com/wimg/PHPCompatibility.git
+    - *installComposer
+    - cd PHPCompatibility && php ../composer.phar install && cd ..
+    - ./PHPCompatibility/vendor/bin/phpcs -d memory_limit=-1 --ignore=*.js,*.css,features/* --exclude=PHPCompatibility.PHP.DefaultTimezoneRequired --standard=PHPCompatibility --runtime-set testVersion $PHP_VERSION app/
+  interruptible: true
+
+php_vulnerability:
+  stage: test:sources
+  image: thomas42330/php-phpunit:${PHP_VERSION}
+  before_script:
+#    - eval $(ssh-agent -s)
+#    - echo "$SSH_PRIVATE_KEY" | ssh-add -
+#    - mkdir -p ~/.ssh
+#    - 'echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config'
+#    - cp .env.ci .env
+#    - composer config http-basic.backpackforlaravel.com $BACKPACK_USERNAME $BACKPACK_PASSWORD
+    - composer install --no-dev
+  script:
+    - composer audit
+  interruptible: true
+
+cpd:
+  stage: test:sources
+  image: php:${PHP_VERSION}-fpm-alpine
+  allow_failure: true
+  script:
+    - curl -sSLfO https://phar.phpunit.de/phpcpd.phar
+    - chmod +x phpcpd.phar
+    - mv phpcpd.phar cpd
+    - ./cpd ./app/ ./config ./database
+  interruptible: true
+
+phplint:
+  stage: test:sources
+  image: php:${PHP_VERSION}-fpm-alpine
+  before_script:
+    - *installApkDependencies
+    - *installComposer
+    - echo "{}" > composer-ci.json
+    - *composerCiAllowPackages
+    - COMPOSER=composer-ci.json php composer.phar require overtrue/phplint
+  script:
+    - ./vendor/bin/phplint ./app ./config ./database --exclude=vendor
+  interruptible: true
+
+# ############################### #
+# TESTS
+## TEST FRONT
+# ############################### #
+
+eslint:
+  stage: test:sources
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git
+    - npm ci
+  script:
+    - npm run lint
+  interruptible: true
+
+stylelint:
+  stage: test:sources
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci
+  script:
+    - npm run stylelint
+  interruptible: true
+
+jshint:
+  stage: test:sources
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci
+  allow_failure: true
+  script:
+    - npm install -g jshint
+    - jshint resources/assets/js/
+  interruptible: true
+
+# ############################### #
+# TESTS
+## TEST PHP BUILT
+# ############################### #
+
+# If using Cypress, remove `phpunit` job and uncomment `phpunit_cypress` job
+phpunit:
+  stage: test:built
+  image: thomas42330/php-phpunit:${PHP_VERSION}
+  services:
+    - name: mariadb:10.4.19
+      alias: mysql-1
+  before_script:
+    ######
+    # If Composer dependencies in non-public repositories then add CI ssh
+    # private key as enabled deploy key in their repositories and add a
+    # CI_SSH_PRIVATE_KEY variable in your repository
+    ######
+    #- '[[ ! -f /.dockerenv ]] && exit 1'
+    #- eval $(ssh-agent -s)
+    #- echo "$CI_SSH_PRIVATE_KEY" | ssh-add -
+    #- mkdir -p ~/.ssh
+    #- 'echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config'
+    - cp .env.ci .env
+    - composer install -a --no-interaction --no-progress
+    - chmod +x ./.cloud/gitlab/phpunit/configure-laravel.sh && ./.cloud/gitlab/phpunit/configure-laravel.sh # Have a look at snippet #104
+  script:
+    - mkdir .phpunit
+    - vendor/bin/phpunit --coverage-html phpunit --testdox-html phpunit/result.html --coverage-text --colors=never
+  artifacts:
+    paths:
+      - phpunit/
+    expire_in: 1 week
+  interruptible: true
+
+#cypress:
+#  stage: test:built
+#  image: chilio/laravel-dusk-ci:php-8.0
+#  services:
+#    - name: mariadb:10.4.19
+#      alias: mysql-1
+#  before_script:
+#    ######
+#    # If Composer dependencies in non-public repositories then add CI ssh
+#    # private key as enabled deploy key in their repositories and add a
+#    # CI_SSH_PRIVATE_KEY variable in your repository
+#    ######
+#    #- '[[ ! -f /.dockerenv ]] && exit 1'
+#    #- eval $(ssh-agent -s)
+#    #- echo "$CI_SSH_PRIVATE_KEY" | ssh-add -
+#    #- mkdir -p ~/.ssh
+#    #- 'echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config'
+#    - cp .env.ci .env
+#    - npm ci
+#    - *installComposer
+#    - php composer.phar install -a
+#    - configure-laravel
+#  script:
+#    # PHP Unit
+#    - mkdir .phpunit
+#    - vendor/bin/phpunit --coverage-html phpunit --testdox-html phpunit/result.html --coverage-text --colors=never
+#    # Cypress
+#    - chmod a+w -R ./storage/logs
+#    - start-nginx-ci-project
+#    - npx cypress install
+#    - chromedriver &
+#    - sleep 5
+#    - xvfb-run npx cypress run --browser chrome
+#  artifacts:
+#    paths:
+#      - phpunit/
+#      - cypress/screenshots/**/*.png
+#      - cypress/videos/
+#    when: always
+#    expire_in: 1 week
+#  cache:
+#    key: ${CI_COMMIT_REF_SLUG}-cypress
+#    paths:
+#      - cache/Cypress
+#  interruptible: true
+
+security_tests:
+  image: owasp/zap2docker-stable
+  stage: test:built
+  allow_failure: true
+  before_script:
+    - mkdir -p ~/.ssh
+  script:
+    - zap-baseline.py -t http://{your-NOT-production-server}
+  only:
+    - preprod
+    - master
+  when: manual
+  interruptible: true
+
+# ################################################
+# -- DEPLOYMENT
+# ################################################
+
+deploy:
+  stage: deploy
+  script:
+    - '[[ -z $SSH_USER ]] || [[ -z $SSH_HOST ]] || [[ -z $SSH_WORKDIR ]] || [[ -z $WEBSITE_HOST ]] && exit 1'
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan down --refresh=10"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && git pull"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan config:clear"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && composer install --no-dev --no-progress -a"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan config:cache"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan route:cache"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan migrate --force"
+    - rsync --include '*/' --include="*.css" --include '*.js' --exclude="*" --compress -rltvI public/ $SSH_USER@$SSH_HOST:$SSH_WORKDIR/public
+    - rsync --compress -rltvI public/mix-manifest.json $SSH_USER@$SSH_HOST:$SSH_WORKDIR/public
+    - '[[ -d public/fonts ]] && rsync --compress -rltvI public/fonts $SSH_USER@$SSH_HOST:$SSH_WORKDIR/public || echo "No fonts directory"'
+    - '[[ -d public/images ]] && rsync --compress -rltvI public/images $SSH_USER@$SSH_HOST:$SSH_WORKDIR/public || echo "No images directory"'
+    - '[[ -d public/files ]] && rsync --compress -rltvI public/files $SSH_USER@$SSH_HOST:$SSH_WORKDIR/public || echo "No files directory"'
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan cache:clear"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan config:cache"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan route:cache"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan queue:restart" # restart queue
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan view:cache"
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan up"
+#    - ssh $SSH_USER@$SSH_HOST "crontab $SSH_WORKDIR/cron/cron.txt" # need cron/cron.txt file
+    - ssh $SSH_USER@$SSH_HOST "cd $SSH_WORKDIR && php artisan self-diagnosis"
+    - 'exit $(( $(curl --write-out %{http_code} --silent --output /dev/null $WEBSITE_HOST) == 200 ? 0 : 1 ))'
+  only:
+    - preprod
+    - production
+  environment:
+    name: $CI_COMMIT_REF_NAME
+    url: $WEBSITE_HOST

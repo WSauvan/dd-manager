@@ -256,7 +256,7 @@ phpunit:
     - chmod +x ./.cloud/gitlab/phpunit/configure-laravel.sh && ./.cloud/gitlab/phpunit/configure-laravel.sh # Have a look at snippet #104
   script:
     - mkdir .phpunit
-    - vendor/bin/phpunit --coverage-html phpunit --testdox-html phpunit/result.html --coverage-text --colors=never
+    - vendor/bin/pest --coverage-html phpunit --testdox-html phpunit/result.html --coverage-text --colors=never
   artifacts:
     paths:
       - phpunit/
@@ -288,7 +288,7 @@ phpunit:
 #  script:
 #    # PHP Unit
 #    - mkdir .phpunit
-#    - vendor/bin/phpunit --coverage-html phpunit --testdox-html phpunit/result.html --coverage-text --colors=never
+#    - vendor/bin/pest --coverage-html phpunit --testdox-html phpunit/result.html --coverage-text --colors=never
 #    # Cypress
 #    - chmod a+w -R ./storage/logs
 #    - start-nginx-ci-project

@@ -19,5 +19,8 @@
         "sass-loader": "^13.3.2",
         "sass-resources-loader": "^2.2.5",
         "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "vue": "^3.3.4"
     }
 }

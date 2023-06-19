@@ -13,6 +13,7 @@
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-vue": "^9.15.0",
+        "eslint-webpack-plugin": "^4.0.1",
         "husky": "^8.0.3",
         "laravel-vite-plugin": "^0.7.5",
         "normalize.css": "^8.0.1",

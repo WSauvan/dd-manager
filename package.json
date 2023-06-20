@@ -11,9 +11,12 @@
         "hooks": "rm -rf .git/hooks/* && npx husky install",
         "lint": "pretty-quick --staged --check --pattern 'resources/**/*.*(js|vue|scss)'",
         "stylelint": "stylelint ./resources/scss/**/*",
-        "grumphp": "DIFF=$(git -c diff.mnemonicprefix=false --no-pager diff -r -p -m -M --full-index --no-color --staged | cat) \n\n(cd \"./\" && printf \"%s\\n\" \"${DIFF}\" | exec './vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')"
+        "grumphp": "DIFF=$(git -c diff.mnemonicprefix=false --no-pager diff -r -p -m -M --full-index --no-color --staged | cat) \n\n(cd \"./\" && printf \"%s\\n\" \"${DIFF}\" | exec './vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')",
+        "prepare": "husky install"
     },
     "devDependencies": {
+        "@commitlint/cli": "^17.6.5",
+        "@commitlint/config-conventional": "^17.6.5",
         "@protonemedia/laravel-splade": "^1.4.14",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.2",
@@ -30,7 +33,7 @@
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-vue": "^9.15.0",
         "eslint-webpack-plugin": "^4.0.1",
-        "husky": "^8.0.3",
+        "husky": "^8.0.0",
         "laravel-mix-eslint": "^0.2.0",
         "laravel-mix-polyfill": "^3.0.1",
         "laravel-mix-stylelint": "^1.0.0",

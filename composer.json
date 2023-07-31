@@ -26,6 +26,8 @@
         "backpack/generators": "^3.3",
         "barryvdh/laravel-debugbar": "^3.8",
         "barryvdh/laravel-ide-helper": "^2.10",
+        "laracasts/generators": "^2.0",
+        "laracraft-tech/laravel-schema-rules": "^1.2",
         "laravel-lang/attributes": "^2.3",
         "laravel-lang/lang": "^12.21",
         "laravel-lang/publisher": "^14.6",
